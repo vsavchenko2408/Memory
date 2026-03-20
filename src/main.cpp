@@ -1,5 +1,6 @@
 #include <iostream>
 #include "../include/uniq_ptr.h"
+#include "../include/shared_ptr.h"
 
 int main()
 {
