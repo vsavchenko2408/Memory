@@ -3,7 +3,8 @@
 
 int main()
 {
-    Uniq_ptr<int> ptr(15);
-    Uniq_ptr<int> ptr1 = ptr;
-    std::cout << *ptr << std::endl;
+    Uniq_ptr<int> ptr(new int(15));
+    Uniq_ptr<float> fptr(15.2);
+    std::cout << "ptr: " << *ptr << std::endl;
+    std::cout << "fptr: " << *fptr << std::endl;
 }
