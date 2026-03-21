@@ -33,8 +33,34 @@ class Shared_ptr
         return *this;
     }
 
+    Shared_ptr(Shared_ptr&& move) noexcept : _data(move._data), _count(move._count)
+    {
+        move._count = nullptr;
+        move._data = nullptr;
+    }
 
+    Shared_ptr& operator=(Shared_ptr&& move)
+    {
+        if(this != &move)
+        {
+            --(*_count);
+            if(*_count == 0)
+            {
+                delete _data;
+                delete _count;
+            }
+            _data = move._data;
+            _count = move._count;
+            move._data  = nullptr;
+            move._count = nullptr;
+        }
+        return *this;
+    }
 
+    T* get() const noexcept
+    {
+        return _data;
+    }
     T& operator*() 
     {
         return *_data;
@@ -45,6 +71,7 @@ class Shared_ptr
     }
     ~Shared_ptr()
     {
+        if(_count == nullptr) return;
         --(*_count);
         if(*_count == 0)
         {
