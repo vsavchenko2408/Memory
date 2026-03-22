@@ -4,8 +4,7 @@
 
 int main()
 {
-    Shared_ptr<int> ptr(new int(15));
-    Shared_ptr<float> fptr(15.2);
-    std::cout << "ptr: " << *ptr << std::endl;
-    std::cout << "fptr: " << *fptr << std::endl;
+
+    Uniq_ptr<float> fptr(15.2);
+    std::cout << "fptr: " << *fptr.get() << std::endl;
 }

@@ -6,11 +6,11 @@ template<typename T>
 class Shared_ptr
 {
     T* _data;
-    size_t* _count;
+    unsigned int* _count;
     public:
-    Shared_ptr(T* data = nullptr) : _data(data), _count(new size_t(1))
+    Shared_ptr(T* data = nullptr) : _data(data), _count(new unsigned int(1))
     {}
-    Shared_ptr(T data) : _data(new T(data)), _count(new size_t(1))
+    Shared_ptr(T data) : _data(new T(data)), _count(new unsigned int(1))
     {}
     Shared_ptr(const Shared_ptr& copy): _data(copy._data), _count(copy._count)
     {
