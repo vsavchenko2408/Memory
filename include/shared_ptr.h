@@ -69,6 +69,14 @@ class Shared_ptr
     {
         return *_data;
     }
+    T operator->()
+    {
+        return _data;
+    }
+    T operator->() const
+    {
+        return _data;
+    }
     ~Shared_ptr()
     {
         if(_count == nullptr) return;
