@@ -14,17 +14,71 @@ class Weak_ptr
     {
     ++(*_weak);
     }
+    Weak_ptr(const Weak_ptr& copy) : _data(copy._data) , _shared(copy._shared), _weak(copy._weak) 
+    {
+        ++(*_weak);
+    }
 
+    Weak_ptr& operator=(const Weak_ptr& copy)
+    {
+        if(this != &copy)
+        {
+            if(_weak != nullptr)
+            {
+            --(*_weak);
+                if(*_shared == 0 && *_weak == 0)
+                {
+                    delete _shared;
+                    delete _weak;
+                }
+            }
+            _data = copy._data;
+            _shared = copy._shared;
+            _weak = copy._weak;
+            if(_weak != nullptr)++(*_weak);
+        }
+        return *this;
+    }
+
+    Weak_ptr(Weak_ptr&& move) noexcept : _data(move._data), _shared(move._shared), _weak(move._weak)
+    {
+        move._shared = nullptr;
+        move._data = nullptr;
+        move._weak = nullptr;
+    }
+
+    Weak_ptr& operator=(Weak_ptr&& move)
+    {
+        if(this != &move)
+        {
+            if(_weak != nullptr)
+            {
+                --(*_weak);
+                if(*_shared == 0 && *_weak == 0)
+                {
+                    delete _shared;
+                    delete _weak;
+                }
+            }
+            _data = move._data;
+            _shared = move._shared;
+            _weak = move._weak;
+            move._data  = nullptr;
+            move._shared = nullptr;
+            move._weak = nullptr;
+        }
+        return *this;
+    }
     Shared_ptr<T> lock() const
     {
-    if(*_shared == 0) return Shared_ptr<T>(nullptr);
+    if( _shared == nullptr || *_shared == 0) return Shared_ptr<T>(nullptr);
     ++(*_shared);
     return Shared_ptr<T>(_data, _shared, _weak); 
     }   
     
     bool expired() const
     { 
-        return *_shared == 0;
+        return _shared == nullptr || *_shared == 0;
     }
     T& operator*()
     {
