@@ -1,6 +1,6 @@
 #ifndef WEAK_PTR_H
 #define WEAK_PTR_H
-
+#include "shared_ptr.h"
 template<typename T>
 class Weak_ptr
 {
@@ -8,16 +8,29 @@ class Weak_ptr
     unsigned int* _shared;
     unsigned int* _weak; 
     public:
-    Weak_ptr(): _data(nullptr), _shared(0), _weak(0)
+    Weak_ptr(): _data(nullptr), _shared(nullptr), _weak(nullptr)
     {}
-    Weak_ptr(T obj): _data(new T(obj)), _shared(new unsigned int(0)), _weak(new unsigned int(1))
-    {}
+    Weak_ptr(const Shared_ptr<T>& sp) : _data(sp._data), _shared(sp._shared), _weak(sp._weak)
+    {
+    ++(*_weak);
+    }
 
-    T operator*()
+    Shared_ptr<T> lock() const
+    {
+    if(*_shared == 0) return Shared_ptr<T>(nullptr);
+    ++(*_shared);
+    return Shared_ptr<T>(_data, _shared, _weak); 
+    }   
+    
+    bool expired() const
+    { 
+        return *_shared == 0;
+    }
+    T& operator*()
     {
         return *_data;
     }
-    T operator*() const
+    T& operator*() const
     {
         return *_data;
     }
@@ -35,11 +48,12 @@ class Weak_ptr
     }
     ~Weak_ptr()
     {
-        if(_shared == 0 && _weak == 0)
+        if(_weak == nullptr) return;
+        --(*_weak);
+        if(*_weak == 0 && *_shared == 0)
         {
-            delete _data;
-            delete _weak;
             delete _shared;
+            delete _weak;
         }
     }
 };

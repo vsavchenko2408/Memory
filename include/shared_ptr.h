@@ -1,58 +1,70 @@
 #ifndef SHARED_PTR_H
 #define SHARED_PTR_H
 #include <cstdint>
+template<typename T> class Weak_ptr;
 
 template<typename T>
 class Shared_ptr
 {
     T* _data;
-    unsigned int* _count;
+    unsigned int* _shared;
+    unsigned int* _weak;
+    Shared_ptr(T* data, unsigned int* shared, unsigned int* weak) : _data(data), _shared(shared), _weak(weak)
+    {}
     public:
-    Shared_ptr(T* data = nullptr) : _data(data), _count(new unsigned int(1))
+        template<typename U>
+        friend class Weak_ptr;
+    Shared_ptr(T* data = nullptr) : _data(data), _shared(new unsigned int(1)), _weak(new unsigned int(0))
     {}
-    Shared_ptr(T data) : _data(new T(data)), _count(new unsigned int(1))
+    Shared_ptr(T data) : _data(new T(data)), _shared(new unsigned int(1)), _weak(new unsigned int(0))
     {}
-    Shared_ptr(const Shared_ptr& copy): _data(copy._data), _count(copy._count)
+    Shared_ptr(const Shared_ptr& copy): _data(copy._data), _shared(copy._shared), _weak(copy._weak)
     {
-        ++(*_count);
+        ++(*_shared);
     }
     Shared_ptr& operator=(const Shared_ptr& copy)
     {
         if(this != &copy)
         {
-        --(*_count);
-            if(*_count == 0)
+        --(*_shared);
+            if(*_shared == 0)
             {
                 delete _data;
-                delete _count;
+                delete _shared;
+                delete _weak;
             }
             _data = copy._data;
-            _count = copy._count;
-            ++(*_count);
+            _shared = copy._shared;
+            _weak = copy._weak;
+            ++(*_shared);
         }
         return *this;
     }
 
-    Shared_ptr(Shared_ptr&& move) noexcept : _data(move._data), _count(move._count)
+    Shared_ptr(Shared_ptr&& move) noexcept : _data(move._data), _shared(move._shared), _weak(move._weak)
     {
-        move._count = nullptr;
+        move._shared = nullptr;
         move._data = nullptr;
+        move._weak = nullptr;
     }
 
     Shared_ptr& operator=(Shared_ptr&& move)
     {
         if(this != &move)
         {
-            --(*_count);
-            if(*_count == 0)
+            --(*_shared);
+            if(*_shared == 0)
             {
                 delete _data;
-                delete _count;
+                delete _shared;
+                delete _weak;
             }
             _data = move._data;
-            _count = move._count;
+            _shared = move._shared;
+            _weak = move._weak;
             move._data  = nullptr;
-            move._count = nullptr;
+            move._shared = nullptr;
+            move._weak = nullptr;
         }
         return *this;
     }
@@ -69,25 +81,31 @@ class Shared_ptr
     {
         return *_data;
     }
-    T operator->()
+    T* operator->()
     {
         return _data;
     }
-    T operator->() const
+    T* operator->() const
     {
         return _data;
     }
     ~Shared_ptr()
     {
-        if(_count == nullptr) return;
-        --(*_count);
-        if(*_count == 0)
+    if(_shared == nullptr) return;
+    --(*_shared);
+    if(*_shared == 0)
+    {
+        delete _data;
+        _data = nullptr;
+        if(*_weak == 0)
         {
-            delete _data;
-            delete _count;
+            delete _shared;
+            delete _weak;
         }
     }
+    }
 
+    
 };
 
 #endif
